@@ -43,7 +43,6 @@ namespace TU_FS
         }
 
 
-
         [TestMethod]
         public void Cd()
         {
@@ -52,7 +51,14 @@ namespace TU_FS
         }
 
         [TestMethod]
-        public void NoFileCd()
+        public void CdFile()
+        {
+            File recup = courants.cd("CeciEstUneFile");
+            Assert.AreEqual(recup, TDD);
+        }
+
+        [TestMethod]
+        public void NoCd()
         {
             File recup = courants.cd("TDDs");
             Assert.AreEqual(recup, null);
@@ -81,8 +87,8 @@ namespace TU_FS
         [TestMethod]
         public void MkdirNoRight()
         {
-            courants.Permissions = 0;
-            Assert.IsFalse(courants.mkdir("TDD"));
+            TDDDirectory.Permissions = 0;
+            Assert.IsFalse(TDDDirectory.mkdir("ViveBSD"));
         }
 
         [TestMethod]
@@ -135,8 +141,8 @@ namespace TU_FS
         [TestMethod]
         public void LsNoRight()
         {
-            courants.Permissions = 0;
-            Assert.AreEqual(FreeBSD.ls().Count, 0);
+            TDDDirectory.Permissions = 0;
+            Assert.IsNull(TDDDirectory.ls());
         }
 
         [TestMethod]
@@ -191,18 +197,18 @@ namespace TU_FS
         [TestMethod]
         public void RenameNoRightParent()
         {
-            courants.Permissions = 0;
-            courants.rename("AMortJava", "test");
-            Assert.AreEqual(AMortJava.Nom, "AMortJava");
+            TDDDirectory.Permissions = 0;
+            TDDDirectory.rename("ViveBSD", "test");
+            Assert.AreEqual(ViveBSD.Nom, "ViveBSD");
         }
 
 
         [TestMethod]
         public void CreateNewFile()
         {
-            int pre = courants.contenu.Count;
-            courants.createNewFile("TU");
-            Assert.AreEqual(pre + 1, courants.contenu.Count);
+            int pre = TDDDirectory.contenu.Count;
+            TDDDirectory.createNewFile("TU");
+            Assert.AreEqual(pre + 1, TDDDirectory.contenu.Count);
         }
 
 
@@ -217,10 +223,10 @@ namespace TU_FS
         [TestMethod]
         public void CreateNewFileNoRight()
         {
-            courants.Permissions = 0;
-            int pre = courants.contenu.Count;
-            courants.createNewFile("TU");
-            Assert.AreEqual(pre, courants.contenu.Count);
+            TDDDirectory.Permissions = 0;
+            int pre = TDDDirectory.contenu.Count;
+            TDDDirectory.createNewFile("TU");
+            Assert.AreEqual(pre, TDDDirectory.contenu.Count);
         }
         
         [TestMethod]
@@ -228,6 +234,13 @@ namespace TU_FS
         {
             Assert.AreEqual(ViveBSD.getParent(), TDDDirectory);
         }
+
+        [TestMethod]
+        public void GetParentRacine()
+        {
+            Assert.AreEqual(courants.getParent(), courants);
+        }
+        
 
         [TestMethod]
         public void Search()
@@ -243,6 +256,27 @@ namespace TU_FS
             ViveBSD.rename("FreeBSD", "AMortJava");
             Assert.AreEqual(courants.search("AMortJava").Count, 2);
         }
+
+        [TestMethod]
+        public void SearchNoRacineRight()
+        {
+            ViveBSD.Permissions = 7;
+            FreeBSD.Permissions = 7;
+            ViveBSD.rename("FreeBSD", "AMortJava");
+            ViveBSD.Permissions = 0;
+            Assert.IsNull(ViveBSD.search("AMortJava"));
+        }
+
+        [TestMethod]
+        public void SearchNoChildRight()
+        {
+            ViveBSD.Permissions = 7;
+            FreeBSD.Permissions = 7;
+            ViveBSD.rename("FreeBSD", "AMortJava");
+            ViveBSD.Permissions = 0;
+            Assert.AreEqual(courants.search("AMortJava").Count, 1);
+        }
+
 
         [TestMethod]
         public void IsFile()
@@ -277,9 +311,26 @@ namespace TU_FS
         [TestMethod]
         public void Delete()
         {
-            int pre = courants.contenu.Count;
-            courants.delete("TDD");
-            Assert.AreEqual(pre - 1, courants.contenu.Count);
+            int pre = TDDDirectory.contenu.Count;
+            TDDDirectory.delete("ViveBSD");
+            Assert.AreEqual(pre - 1, TDDDirectory.contenu.Count);
+        }
+
+        [TestMethod]
+        public void DeleteNothing()
+        {
+            int pre = TDDDirectory.contenu.Count;
+            TDDDirectory.delete("TDDs");
+            Assert.AreEqual(pre, TDDDirectory.contenu.Count);
+        }
+
+        [TestMethod]
+        public void DeleteNoRight()
+        {
+            TDDDirectory.Permissions = 0;
+            int pre = TDDDirectory.contenu.Count;
+            TDDDirectory.delete("ViveBSD");
+            Assert.AreEqual(pre, TDDDirectory.contenu.Count);
         }
 
         [TestMethod]
@@ -289,7 +340,31 @@ namespace TU_FS
             Assert.AreEqual(AMortJava.Permissions, 7);
         }
 
+        [TestMethod]
+        public void ChmodPlus7()
+        {
+            AMortJava.chmod(8);
+            Assert.AreEqual(AMortJava.Permissions, 4);
+        }
    
+        [TestMethod]
+        public void ChmodMoins0()
+        {
+            AMortJava.chmod(-1);
+            Assert.AreEqual(AMortJava.Permissions, 4);
+        }
 
+        [TestMethod]
+        public void DefaultPerm()
+        {
+            Assert.AreEqual(AMortJava.Permissions, 4);
+        }
+
+        [TestMethod]
+        public void ChmodRacine()
+        {
+            courants.chmod(2);
+            Assert.AreEqual(courants.Permissions, 7);
+        }
     }
 }
